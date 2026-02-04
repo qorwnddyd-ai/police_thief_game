@@ -60,7 +60,7 @@
     </div>
 
     <!-- 메인 대시보드 -->
-    <div id="game-screen" class="hidden min-h-screen flex flex-col">
+    <div id="game-screen" class="hidden h-screen flex flex-col overflow-hidden">
         <!-- 긴급 공지 바 -->
         <div id="announcement-display" class="hidden announcement-bar bg-yellow-500 text-black px-6 py-3 font-bold text-center shadow-lg z-50 sticky top-0">
             <span class="mr-2">📢</span> <span id="announcement-text"></span>
@@ -68,7 +68,7 @@
         </div>
 
         <!-- 상단 헤더 -->
-        <header id="role-header" class="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-white/5">
+        <header id="role-header" class="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-white/5 shadow-md">
             <div class="flex items-center gap-3">
                 <div id="sync-status" class="w-2.5 h-2.5 rounded-full bg-green-500 status-pulse"></div>
                 <div>
@@ -82,8 +82,8 @@
             </div>
         </header>
 
-        <!-- 내용 영역 -->
-        <main class="flex-1 p-5 overflow-y-auto no-scrollbar">
+        <!-- 내용 영역 (스크롤 가능) -->
+        <main class="flex-1 p-5 overflow-y-auto no-scrollbar relative">
             <!-- 체포 상태 알림창 (도둑 전용) -->
             <div id="caught-alert" class="hidden mb-6 bg-red-600 p-5 rounded-2xl shadow-lg shadow-red-900/40 border-2 border-red-400 flex items-center gap-4">
                 <span class="text-4xl animate-bounce">⛓️</span>
@@ -121,8 +121,8 @@
                 <div id="alive-list" class="prison-grid"></div>
             </section>
 
-            <!-- 감옥 목록 -->
-            <section id="prison-section" class="mb-24">
+            <!-- 감옥 목록 (관리자 컨트롤 공간 확보를 위해 패딩 추가) -->
+            <section id="prison-section" class="pb-96">
                 <h3 class="text-xs font-black text-slate-500 uppercase mb-3 flex items-center gap-2">
                     <span class="w-1 h-3 bg-red-600 rounded-full"></span> Prison (Needs Rescue)
                 </h3>
@@ -153,15 +153,15 @@
             </div>
         </div>
 
-        <!-- 하단 컨트롤 패널 -->
-        <footer class="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent z-30">
-            <div id="admin-controls" class="hidden mb-4 bg-slate-900 p-4 rounded-2xl border-2 border-yellow-600/30 shadow-2xl">
+        <!-- 하단 컨트롤 패널 (고정 레이어) -->
+        <footer class="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent z-30 pointer-events-none">
+            <div id="admin-controls" class="hidden mb-4 bg-slate-900 p-4 rounded-2xl border-2 border-yellow-600/30 shadow-2xl pointer-events-auto">
                 <!-- 긴급 공지 발송 -->
                 <div class="mb-4 bg-slate-800 p-3 rounded-xl border border-slate-700">
                     <p class="text-[9px] font-black text-yellow-500 uppercase mb-2 tracking-widest">Broadcast Message</p>
                     <div class="flex gap-2">
                         <input id="announcement-input" type="text" placeholder="공지 메시지 입력" 
-                            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none">
+                            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-yellow-500">
                         <button onclick="sendAnnouncement()" class="bg-yellow-600 text-black font-black text-[10px] px-3 py-2 rounded-lg uppercase">Send</button>
                     </div>
                 </div>
@@ -182,7 +182,7 @@
                 </button>
             </div>
             
-            <button onclick="logout()" class="w-full py-3 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-800 transition-all">
+            <button onclick="logout()" class="w-full py-3 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-800 transition-all pointer-events-auto">
                 Exit Session
             </button>
         </footer>
@@ -276,18 +276,18 @@
             const chatBtn = document.getElementById('chat-toggle-btn');
             
             if (isAdmin) {
-                header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-yellow-500";
+                header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-yellow-500 shadow-lg";
                 roleTag.innerText = '🛡️ SYSTEM ADMIN';
                 roleTag.className = 'text-[10px] font-black uppercase tracking-tighter text-yellow-500';
                 document.getElementById('admin-controls').classList.remove('hidden');
                 chatBtn.classList.remove('hidden'); // 관리자도 채팅 가능
             } else if (profile.role === 'police') {
-                header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-blue-600";
+                header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-blue-600 shadow-lg";
                 roleTag.innerText = '👮 POLICE UNIT';
                 roleTag.className = 'text-[10px] font-black uppercase tracking-tighter text-blue-500';
                 chatBtn.classList.add('hidden'); // 경찰은 채팅 불가
             } else {
-                header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-red-600";
+                header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-red-600 shadow-lg";
                 roleTag.innerText = '🥷 THIEF SURVIVOR';
                 roleTag.className = 'text-[10px] font-black uppercase tracking-tighter text-red-500';
                 chatBtn.classList.remove('hidden'); // 도둑은 채팅 가능
