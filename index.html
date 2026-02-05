@@ -16,12 +16,30 @@
         .status-pulse { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .announcement-bar { animation: slideDown 0.5s ease-out; }
+        
+        /* 공지사항 애니메이션 강화 */
+        .announcement-bar { 
+            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border-bottom: 4px solid #000;
+        }
         @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
         
-        /* 채팅창 애니메이션 */
+        /* 사이렌 효과 (경찰 경보용) */
+        .siren-alert {
+            animation: siren 1s infinite;
+        }
+        @keyframes siren {
+            0%, 100% { background-color: rgba(220, 38, 38, 0.95); box-shadow: 0 0 20px rgba(220, 38, 38, 0.5); }
+            50% { background-color: rgba(153, 27, 27, 0.95); box-shadow: 0 0 40px rgba(220, 38, 38, 0.8); }
+        }
+
         #chat-modal { transition: transform 0.3s ease-in-out; }
         .chat-hidden { transform: translateY(100%); }
+
+        /* 감옥 폐쇄 스타일 */
+        .lockdown-active { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.1) !important; }
+        .lockdown-flash { animation: flash 1s infinite; }
+        @keyframes flash { 0%, 100% { background-color: rgba(239, 68, 68, 0.15); } 50% { background-color: rgba(239, 68, 68, 0.35); } }
     </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen">
@@ -30,16 +48,16 @@
     <div id="login-screen" class="flex flex-col items-center justify-center min-h-screen p-6">
         <div class="mb-10 text-center">
             <h1 class="text-5xl title-font mb-2 text-yellow-400 drop-shadow-lg">경찰과 도둑</h1>
-            <p class="text-slate-400 tracking-widest text-sm uppercase">Winter Youth Camp 2026</p>
+            <p class="text-slate-400 tracking-widest text-sm uppercase tracking-[0.2em]">Winter Youth Camp 2026</p>
         </div>
         <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-800">
             <div class="mb-6">
-                <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 uppercase">Name</label>
+                <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 uppercase tracking-wider">Name</label>
                 <input id="user-name" type="text" placeholder="본인의 이름을 입력하세요" 
                     class="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-white transition-all">
             </div>
             
-            <p class="text-xs font-bold text-slate-500 mb-3 ml-1 uppercase">Role Selection</p>
+            <p class="text-xs font-bold text-slate-500 mb-3 ml-1 uppercase tracking-wider">Role Selection</p>
             <div class="grid grid-cols-2 gap-4 mb-8">
                 <button onclick="joinGame('police')" class="group flex flex-col items-center justify-center bg-blue-600/10 hover:bg-blue-600 border-2 border-blue-600/30 hover:border-blue-600 p-6 rounded-2xl transition-all">
                     <span class="text-3xl mb-2">👮</span>
@@ -59,15 +77,30 @@
         </div>
     </div>
 
-    <!-- 메인 대시보드 -->
+    <!-- 메인 대시보드 화면 -->
     <div id="game-screen" class="hidden h-screen flex flex-col overflow-hidden">
-        <!-- 긴급 공지 바 -->
-        <div id="announcement-display" class="hidden announcement-bar bg-yellow-500 text-black px-6 py-3 font-bold text-center shadow-lg z-50 sticky top-0">
-            <span class="mr-2">📢</span> <span id="announcement-text"></span>
-            <button onclick="clearAnnouncementLocally()" class="ml-4 text-[10px] bg-black/10 px-2 py-1 rounded font-black uppercase">Close</button>
+        <!-- 긴급 공지 바 (강화된 디자인) -->
+        <div id="announcement-display" class="hidden announcement-bar bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 text-black px-6 py-4 shadow-2xl z-[60] sticky top-0 border-b-4 border-yellow-600">
+            <div class="flex items-center justify-between max-w-lg mx-auto">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl animate-bounce">📢</span>
+                    <span id="announcement-text" class="font-black text-lg tracking-tight"></span>
+                </div>
+                <button onclick="clearAnnouncementLocally()" class="bg-black text-white text-[10px] px-3 py-1.5 rounded-lg font-black uppercase shadow-md active:scale-95 transition-transform">Close</button>
+            </div>
         </div>
 
-        <!-- 상단 헤더 -->
+        <!-- 경찰 전용 탈옥 경보 (Siren Alert) -->
+        <div id="police-escape-alert" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm pointer-events-auto">
+            <div class="siren-alert w-full max-w-sm p-8 rounded-3xl border-4 border-red-400 text-center shadow-2xl">
+                <span class="text-6xl mb-4 block">🚨</span>
+                <h3 class="text-3xl title-font text-white mb-2">탈옥 발생!</h3>
+                <p class="text-red-100 font-bold mb-6">지금 즉시 감옥(아동부실) 상황을<br>확인하러 출동하세요!</p>
+                <button onclick="closePoliceAlert()" class="w-full bg-white text-red-600 py-4 rounded-2xl font-black text-xl shadow-xl active:scale-95 transition-transform">확인했습니다!</button>
+            </div>
+        </div>
+
+        <!-- 상단 고정 헤더 -->
         <header id="role-header" class="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-white/5 shadow-md">
             <div class="flex items-center gap-3">
                 <div id="sync-status" class="w-2.5 h-2.5 rounded-full bg-green-500 status-pulse"></div>
@@ -77,23 +110,23 @@
                 </div>
             </div>
             <div class="flex flex-col items-end">
-                <span class="text-[9px] font-black text-slate-500 uppercase">Remaining</span>
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-tighter">Remaining</span>
                 <div id="timer" class="text-2xl font-mono font-black text-white leading-none">00:00</div>
             </div>
         </header>
 
-        <!-- 내용 영역 (스크롤 가능) -->
+        <!-- 메인 내용 (스크롤 영역) -->
         <main class="flex-1 p-5 overflow-y-auto no-scrollbar relative">
-            <!-- 체포 상태 알림창 (도둑 전용) -->
+            <!-- 체포 알림창 (도둑 전용) -->
             <div id="caught-alert" class="hidden mb-6 bg-red-600 p-5 rounded-2xl shadow-lg shadow-red-900/40 border-2 border-red-400 flex items-center gap-4">
                 <span class="text-4xl animate-bounce">⛓️</span>
                 <div>
                     <h3 class="font-black text-xl leading-tight text-white">당신은 체포되었습니다!</h3>
-                    <p class="text-red-100 text-sm">아동부실(감옥)로 이동하세요.</p>
+                    <p class="text-red-100 text-sm">아동부실(감옥)로 이동해 주세요.</p>
                 </div>
             </div>
 
-            <!-- 현황 통계 -->
+            <!-- 상단 통계 -->
             <div class="grid grid-cols-2 gap-4 mb-8">
                 <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-col items-center shadow-inner">
                     <span class="text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-widest">Active Thieves</span>
@@ -107,89 +140,106 @@
 
             <!-- 경찰 명단 -->
             <section id="police-section" class="mb-8">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 flex items-center gap-2">
-                    <span class="w-1 h-3 bg-blue-600 rounded-full"></span> Police Units
+                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 flex items-center gap-2 tracking-widest">
+                    <span class="w-1.5 h-3 bg-blue-600 rounded-full"></span> Police Unit
                 </h3>
                 <div id="police-list" class="flex flex-wrap gap-2"></div>
             </section>
 
-            <!-- 도둑 목록 -->
+            <!-- 활동 중인 도둑 목록 -->
             <section id="alive-section" class="mb-8">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 flex items-center gap-2">
-                    <span class="w-1 h-3 bg-green-500 rounded-full"></span> Active Targets
+                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 flex items-center gap-2 tracking-widest">
+                    <span class="w-1.5 h-3 bg-green-500 rounded-full"></span> Active Targets
                 </h3>
                 <div id="alive-list" class="prison-grid"></div>
             </section>
 
-            <!-- 감옥 목록 (관리자 컨트롤 공간 확보를 위해 패딩 추가) -->
+            <!-- 감옥 수감자 목록 -->
             <section id="prison-section" class="pb-96">
-                <h3 class="text-xs font-black text-slate-500 uppercase mb-3 flex items-center gap-2">
-                    <span class="w-1 h-3 bg-red-600 rounded-full"></span> Prison (Needs Rescue)
-                </h3>
-                <div id="prison-list" class="prison-grid"></div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-black text-slate-500 uppercase flex items-center gap-2 tracking-widest">
+                        <span class="w-1.5 h-3 bg-red-600 rounded-full"></span> Prison (Need Help)
+                    </h3>
+                    <!-- 탈옥 방지 카운트다운 표시기 -->
+                    <div id="lockdown-status" class="hidden px-2 py-1 rounded bg-red-600/20 border border-red-500 text-[10px] font-black text-red-500 flex items-center gap-1">
+                        <span class="status-pulse">🔒</span> LOCKDOWN: <span id="lockdown-timer">00</span>s
+                    </div>
+                </div>
+                <div id="prison-list" class="prison-grid p-3 rounded-2xl border-2 border-transparent transition-all"></div>
             </section>
         </main>
 
         <!-- 도둑 전용 채팅 버튼 (플로팅) -->
-        <button id="chat-toggle-btn" onclick="toggleChat()" class="hidden fixed bottom-24 right-6 w-14 h-14 bg-red-600 rounded-full shadow-2xl flex items-center justify-center text-2xl z-40 border-2 border-red-400">
+        <button id="chat-toggle-btn" onclick="toggleChat()" class="hidden fixed bottom-28 right-6 w-14 h-14 bg-red-600 rounded-full shadow-2xl flex items-center justify-center text-2xl z-40 border-2 border-red-400 active:scale-90 transition-transform">
             💬
         </button>
 
-        <!-- 도둑 전용 채팅 모달 -->
+        <!-- 채팅창 모달 -->
         <div id="chat-modal" class="fixed inset-x-0 bottom-0 h-3/4 bg-slate-900 z-50 rounded-t-3xl border-t-2 border-red-500 shadow-2xl flex flex-col chat-hidden transition-all duration-300">
             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-800 rounded-t-3xl">
-                <h3 class="font-black text-red-500 flex items-center gap-2">
-                    <span class="text-xl">🥷</span> 도둑 비밀 채팅방
+                <h3 class="font-black text-red-500 flex items-center gap-2 uppercase tracking-widest">
+                    <span class="text-xl">🥷</span> Secret Radio
                 </h3>
                 <button onclick="toggleChat()" class="text-slate-400 text-xs font-bold uppercase tracking-widest">Hide</button>
             </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
-                <!-- 메시지 출력 -->
-            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar"></div>
             <div class="p-4 bg-slate-950 border-t border-slate-800 flex gap-2">
                 <input id="chat-input" type="text" placeholder="메시지를 입력하세요..." 
-                    class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-red-500">
-                <button onclick="sendChatMessage()" class="bg-red-600 text-white font-black px-4 py-3 rounded-xl uppercase text-xs">Send</button>
+                    class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-red-500 transition-all">
+                <button onclick="sendChatMessage()" class="bg-red-600 text-white font-black px-5 py-3 rounded-xl uppercase text-xs active:scale-95 transition-transform">Send</button>
             </div>
         </div>
 
-        <!-- 하단 컨트롤 패널 (고정 레이어) -->
+        <!-- 하단 관리자 고정 패널 -->
         <footer class="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent z-30 pointer-events-none">
             <div id="admin-controls" class="hidden mb-4 bg-slate-900 p-4 rounded-2xl border-2 border-yellow-600/30 shadow-2xl pointer-events-auto">
-                <!-- 긴급 공지 발송 -->
+                <!-- 긴급 공지 입력 -->
                 <div class="mb-4 bg-slate-800 p-3 rounded-xl border border-slate-700">
-                    <p class="text-[9px] font-black text-yellow-500 uppercase mb-2 tracking-widest">Broadcast Message</p>
+                    <p class="text-[9px] font-black text-yellow-500 uppercase mb-2 tracking-widest">Emergency Broadcast</p>
                     <div class="flex gap-2">
-                        <input id="announcement-input" type="text" placeholder="공지 메시지 입력" 
-                            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-yellow-500">
-                        <button onclick="sendAnnouncement()" class="bg-yellow-600 text-black font-black text-[10px] px-3 py-2 rounded-lg uppercase">Send</button>
+                        <input id="announcement-input" type="text" placeholder="공지할 내용을 입력하세요" 
+                            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-yellow-500 transition-all">
+                        <button onclick="sendAnnouncement()" class="bg-yellow-600 text-black font-black text-[10px] px-3 py-2 rounded-lg uppercase active:scale-95 transition-transform">Send</button>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl">
-                        <label class="text-[10px] font-black text-slate-400 uppercase">Min</label>
-                        <input id="timer-input" type="number" value="15" min="1" max="60" 
-                            class="bg-transparent w-8 text-center font-black text-yellow-500 focus:outline-none">
+                <!-- 시간 설정 그리드 -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl border border-slate-700">
+                        <div class="flex flex-col">
+                            <span class="text-[8px] font-black text-slate-500 uppercase">Game</span>
+                            <span class="text-[10px] font-black text-slate-300 uppercase leading-none">Min</span>
+                        </div>
+                        <input id="timer-input" type="number" value="20" min="1" max="60" 
+                            class="bg-transparent w-full text-center font-black text-yellow-500 focus:outline-none text-lg">
                     </div>
-                    <button onclick="toggleGame()" id="game-toggle-btn" 
-                        class="bg-yellow-600 hover:bg-yellow-500 px-8 py-3 rounded-xl font-black text-sm uppercase shadow-lg shadow-yellow-900/20 active:scale-95 transition-all">
-                        Game Start
-                    </button>
+                    <div class="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl border border-slate-700">
+                        <div class="flex flex-col">
+                            <span class="text-[8px] font-black text-slate-500 uppercase">Lock</span>
+                            <span class="text-[10px] font-black text-slate-300 uppercase leading-none">Sec</span>
+                        </div>
+                        <input id="lockdown-input" type="number" value="60" min="0" max="300" 
+                            class="bg-transparent w-full text-center font-black text-red-500 focus:outline-none text-lg">
+                    </div>
                 </div>
+                
+                <button onclick="toggleGame()" id="game-toggle-btn" 
+                    class="w-full bg-yellow-600 hover:bg-yellow-500 py-4 rounded-xl font-black text-sm uppercase shadow-lg shadow-yellow-900/20 mb-2 active:scale-[0.98] transition-all">
+                    Start Operation
+                </button>
                 <button onclick="resetGame()" class="w-full py-2 text-[10px] font-bold text-red-400/50 hover:text-red-400 uppercase tracking-widest transition-all">
                     Reset Session
                 </button>
             </div>
             
-            <button onclick="logout()" class="w-full py-3 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-800 transition-all pointer-events-auto">
-                Exit Session
+            <button onclick="logout()" class="w-full py-3 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-800 transition-all pointer-events-auto active:scale-[0.98]">
+                Exit Device Session
             </button>
         </footer>
     </div>
 
     <script>
-        // --- Supabase 설정 (본인 정보로 교체 필수) ---
+        // --- [설정] Supabase 정보 ---
         const SUPABASE_URL = "https://ebndrppiaxgggsaglzwo.supabase.co"; 
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVibmRycHBpYXhnZ2dzYWdsendvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTA1MjIsImV4cCI6MjA4NTc2NjUyMn0.ZYeyCNanoqV14OyUFrtJ_bZV47H34xS9N1CVhdrmsvY";
         const ADMIN_PASSWORD = "0615";
@@ -201,11 +251,13 @@
 
         let myProfile = null;
         let players = [];
-        let gameState = { is_active: false, start_time: null, duration_minutes: 15, announcement: '' };
+        let gameState = { is_active: false, start_time: null, duration_minutes: 20, announcement: '', lockdown_duration_seconds: 60, last_rescue_at: null };
         let timerInterval = null;
         let pollingInterval = null;
+        let lockdownCheckInterval = null;
         let isAdmin = false;
         let lastAnnouncementShown = '';
+        let lastRescueTimeProcessed = null;
         let chatOpen = false;
 
         window.onload = async () => {
@@ -225,6 +277,7 @@
             await refreshData();
             subscribeToChanges();
             startPolling();
+            startLockdownTimer();
         };
 
         async function refreshData() {
@@ -250,20 +303,17 @@
         async function joinGame(role) {
             const name = document.getElementById('user-name').value.trim();
             if (!name) return alert("이름을 입력하세요!");
-            
             try {
                 const { data: existing } = await _supabase.from('players').select('name').eq('name', name).maybeSingle();
-                if (existing) return alert("이미 등록된 이름입니다.");
-
+                if (existing) return alert("이미 사용 중인 이름입니다.");
                 const { data, error } = await _supabase.from('players').insert([{ name, role, is_caught: false }]).select();
                 if (error) throw error;
-                
                 isAdmin = false;
                 localStorage.setItem('camp_is_admin', 'false');
                 myProfile = data[0];
                 localStorage.setItem('camp_player_profile', JSON.stringify(myProfile));
                 enterGameScreen(myProfile);
-            } catch (err) { alert(err.message); }
+            } catch (err) { alert("입력 오류: " + err.message); }
         }
 
         function enterGameScreen(profile) {
@@ -280,17 +330,17 @@
                 roleTag.innerText = '🛡️ SYSTEM ADMIN';
                 roleTag.className = 'text-[10px] font-black uppercase tracking-tighter text-yellow-500';
                 document.getElementById('admin-controls').classList.remove('hidden');
-                chatBtn.classList.remove('hidden'); // 관리자도 채팅 가능
+                chatBtn.classList.remove('hidden');
             } else if (profile.role === 'police') {
                 header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-blue-600 shadow-lg";
                 roleTag.innerText = '👮 POLICE UNIT';
                 roleTag.className = 'text-[10px] font-black uppercase tracking-tighter text-blue-500';
-                chatBtn.classList.add('hidden'); // 경찰은 채팅 불가
+                chatBtn.classList.add('hidden');
             } else {
                 header.className = "sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b-2 border-red-600 shadow-lg";
-                roleTag.innerText = '🥷 THIEF SURVIVOR';
+                roleTag.innerText = '🥷 THIEF UNIT';
                 roleTag.className = 'text-[10px] font-black uppercase tracking-tighter text-red-500';
-                chatBtn.classList.remove('hidden'); // 도둑은 채팅 가능
+                chatBtn.classList.remove('hidden');
             }
             refreshData();
         }
@@ -298,14 +348,10 @@
         async function fetchPlayers() {
             const { data } = await _supabase.from('players').select('*').order('created_at', { ascending: true });
             players = data || [];
-            
             if (myProfile && !isAdmin && myProfile.role === 'thief') {
                 const me = players.find(p => p.id === myProfile.id);
-                if (me && me.is_caught) {
-                    document.getElementById('caught-alert').classList.remove('hidden');
-                } else {
-                    document.getElementById('caught-alert').classList.add('hidden');
-                }
+                if (me && me.is_caught) document.getElementById('caught-alert').classList.remove('hidden');
+                else document.getElementById('caught-alert').classList.add('hidden');
             }
             renderPlayers();
             updateStats();
@@ -314,15 +360,69 @@
         async function fetchGameState() {
             const { data } = await _supabase.from('game_state').select('*').eq('id', 1).maybeSingle();
             if (data) {
+                const oldRescueAt = gameState.last_rescue_at;
                 gameState = data;
-                updateAnnouncementUI(gameState.announcement);
+                
+                // 탈옥 경보 트리거 (경찰 전용)
+                if (gameState.last_rescue_at && gameState.last_rescue_at !== lastRescueTimeProcessed) {
+                    // 게임 시작 후 발생한 탈옥에 대해서만 경보 (null 상태에서 처음 생기는 것은 무시할 수도 있음)
+                    if (lastRescueTimeProcessed !== null && (myProfile && myProfile.role === 'police')) {
+                        triggerPoliceEscapeAlert();
+                    }
+                    lastRescueTimeProcessed = gameState.last_rescue_at;
+                } else if (gameState.last_rescue_at === null) {
+                    lastRescueTimeProcessed = null;
+                }
 
+                updateAnnouncementUI(gameState.announcement);
                 const timerInput = document.getElementById('timer-input');
-                if (isAdmin && !gameState.is_active && document.activeElement !== timerInput) {
-                    timerInput.value = gameState.duration_minutes || 15;
+                const lockdownInput = document.getElementById('lockdown-input');
+                if (isAdmin && !gameState.is_active && document.activeElement !== timerInput && document.activeElement !== lockdownInput) {
+                    timerInput.value = gameState.duration_minutes || 20;
+                    lockdownInput.value = gameState.lockdown_duration_seconds || 60;
                 }
                 updateUIByGameState();
             }
+        }
+
+        function triggerPoliceEscapeAlert() {
+            const alertBox = document.getElementById('police-escape-alert');
+            alertBox.classList.remove('hidden');
+            // 수동으로 닫지 않아도 7초 후 자동 종료
+            setTimeout(() => {
+                closePoliceAlert();
+            }, 7000);
+        }
+
+        function closePoliceAlert() {
+            document.getElementById('police-escape-alert').classList.add('hidden');
+        }
+
+        function isLockdownActive() {
+            if (!gameState.last_rescue_at || !gameState.lockdown_duration_seconds) return false;
+            const lastRescue = new Date(gameState.last_rescue_at).getTime();
+            const now = Date.now();
+            return (now - lastRescue) < (gameState.lockdown_duration_seconds * 1000);
+        }
+
+        function startLockdownTimer() {
+            if (lockdownCheckInterval) clearInterval(lockdownCheckInterval);
+            lockdownCheckInterval = setInterval(() => {
+                const statusDiv = document.getElementById('lockdown-status');
+                const timerSpan = document.getElementById('lockdown-timer');
+                const prisonListContainer = document.getElementById('prison-list');
+
+                if (isLockdownActive()) {
+                    const lastRescue = new Date(gameState.last_rescue_at).getTime();
+                    const remaining = Math.ceil(((gameState.lockdown_duration_seconds * 1000) - (Date.now() - lastRescue)) / 1000);
+                    statusDiv.classList.remove('hidden');
+                    timerSpan.innerText = remaining;
+                    prisonListContainer.classList.add('lockdown-active', 'lockdown-flash');
+                } else {
+                    statusDiv.classList.add('hidden');
+                    prisonListContainer.classList.remove('lockdown-active', 'lockdown-flash');
+                }
+            }, 500);
         }
 
         function updateAnnouncementUI(text) {
@@ -334,43 +434,29 @@
                     txt.innerText = text;
                     lastAnnouncementShown = text;
                 }
-            } else {
-                bar.classList.add('hidden');
-                lastAnnouncementShown = '';
-            }
+            } else { bar.classList.add('hidden'); lastAnnouncementShown = ''; }
         }
 
-        function clearAnnouncementLocally() {
-            document.getElementById('announcement-display').classList.add('hidden');
-        }
+        function clearAnnouncementLocally() { document.getElementById('announcement-display').classList.add('hidden'); }
 
         async function sendAnnouncement() {
             const input = document.getElementById('announcement-input');
             const message = input.value.trim();
+            if (!message) return;
             const { error } = await _supabase.from('game_state').update({ announcement: message }).eq('id', 1);
-            if (error) alert("발송 실패: " + error.message);
+            if (error) console.error(error);
             else input.value = '';
         }
 
-        // --- 채팅 기능 ---
         function toggleChat() {
             chatOpen = !chatOpen;
             const modal = document.getElementById('chat-modal');
-            if (chatOpen) {
-                modal.classList.remove('chat-hidden');
-                scrollToBottom();
-            } else {
-                modal.classList.add('chat-hidden');
-            }
+            if (chatOpen) { modal.classList.remove('chat-hidden'); scrollToBottom(); }
+            else { modal.classList.add('chat-hidden'); }
         }
 
         async function fetchChatMessages() {
-            const { data } = await _supabase
-                .from('messages')
-                .select('*')
-                .order('created_at', { ascending: true })
-                .limit(50);
-            
+            const { data } = await _supabase.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
             if (data) renderMessages(data);
         }
 
@@ -381,13 +467,7 @@
                 const isMe = myProfile && msg.player_name === myProfile.name;
                 const div = document.createElement('div');
                 div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
-                
-                div.innerHTML = `
-                    <span class="text-[9px] font-bold text-slate-500 mb-1 ml-1 mr-1">${msg.player_name}</span>
-                    <div class="${isMe ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-200'} px-3 py-2 rounded-2xl text-xs max-w-[80%] shadow-sm">
-                        ${msg.content}
-                    </div>
-                `;
+                div.innerHTML = `<span class="text-[9px] font-bold text-slate-500 mb-1 ml-1 mr-1">${msg.player_name}</span><div class="${isMe ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-200'} px-3 py-2 rounded-2xl text-xs max-w-[80%] shadow-sm">${msg.content}</div>`;
                 chatBox.appendChild(div);
             });
             if (chatOpen) scrollToBottom();
@@ -397,27 +477,28 @@
             const input = document.getElementById('chat-input');
             const content = input.value.trim();
             if (!content) return;
-
-            const { error } = await _supabase.from('messages').insert([{
-                player_name: myProfile.name,
-                content: content,
-                role: myProfile.role
-            }]);
-
-            if (error) console.error("Message send fail:", error);
+            const { error } = await _supabase.from('messages').insert([{ player_name: myProfile.name, content: content, role: myProfile.role }]);
+            if (error) console.error(error);
             else input.value = '';
         }
 
-        function scrollToBottom() {
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+        function scrollToBottom() { const chatBox = document.getElementById('chat-messages'); chatBox.scrollTop = chatBox.scrollHeight; }
 
         function subscribeToChanges() {
             _supabase.channel('game_events')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => fetchPlayers())
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'game_state' }, (payload) => {
+                    const oldRescueAt = gameState.last_rescue_at;
                     gameState = payload.new;
+                    
+                    // 탈옥 경보 실시간 체크
+                    if (gameState.last_rescue_at && gameState.last_rescue_at !== lastRescueTimeProcessed) {
+                        if (lastRescueTimeProcessed !== null && (myProfile && myProfile.role === 'police')) {
+                            triggerPoliceEscapeAlert();
+                        }
+                        lastRescueTimeProcessed = gameState.last_rescue_at;
+                    }
+
                     updateAnnouncementUI(gameState.announcement);
                     updateUIByGameState();
                 })
@@ -429,17 +510,22 @@
             if (!gameState.is_active) return;
             if (!myProfile) return;
 
+            const isRescue = targetPlayer.is_caught;
             const canCatch = (myProfile.role === 'police' || isAdmin);
             const canRescue = (myProfile.role === 'thief' || isAdmin);
 
-            if (canCatch && targetPlayer.role === 'thief' && !targetPlayer.is_caught) {
+            if (!isRescue && canCatch && targetPlayer.role === 'thief') {
                 await _supabase.from('players').update({ is_caught: true, caught_at: new Date().toISOString() }).eq('id', targetPlayer.id);
-            } else if (canRescue && targetPlayer.role === 'thief' && targetPlayer.is_caught) {
+            } else if (isRescue && canRescue) {
+                if (isLockdownActive() && !isAdmin) return alert("감옥이 폐쇄 중입니다! " + document.getElementById('lockdown-timer').innerText + "초 후 다시 시도하세요.");
+                
                 if (!isAdmin && myProfile.role === 'thief') {
                     const me = players.find(p => p.id === myProfile.id);
                     if (me && me.is_caught) return alert("당신은 이미 잡혔습니다!");
                 }
+                
                 await _supabase.from('players').update({ is_caught: false }).eq('id', targetPlayer.id);
+                await _supabase.from('game_state').update({ last_rescue_at: new Date().toISOString() }).eq('id', 1);
             }
             await fetchPlayers();
         }
@@ -449,10 +535,8 @@
             const prisonList = document.getElementById('prison-list');
             const policeList = document.getElementById('police-list');
             
-            aliveList.innerHTML = '';
-            prisonList.innerHTML = '';
-            policeList.innerHTML = '';
-
+            aliveList.innerHTML = ''; prisonList.innerHTML = ''; policeList.innerHTML = '';
+            
             players.forEach(p => {
                 if (p.role === 'police') {
                     const badge = document.createElement('span');
@@ -461,7 +545,6 @@
                     policeList.appendChild(badge);
                     return;
                 }
-
                 const card = document.createElement('div');
                 let cardClass = "player-card p-4 rounded-2xl text-center font-black text-sm shadow-xl border-2 ";
                 if (p.is_caught) {
@@ -471,13 +554,14 @@
                     cardClass += "bg-slate-800 text-white border-slate-700";
                     if (isAdmin || (myProfile && myProfile.role === 'police')) cardClass += " border-blue-500 text-white shadow-blue-900/20";
                 }
-                card.className = cardClass;
+                card.className = cardClass; 
                 card.innerText = p.name;
                 card.onclick = () => handleAction(p);
-                if (p.is_caught) prisonList.appendChild(card);
+                
+                if (p.is_caught) prisonList.appendChild(card); 
                 else aliveList.appendChild(card);
             });
-            if (policeList.innerHTML === '') policeList.innerHTML = '<p class="text-[10px] text-slate-600 italic">No on-duty police.</p>';
+            if (policeList.innerHTML === '') policeList.innerHTML = '<p class="text-[10px] text-slate-600 italic uppercase tracking-wider">No police unit detected</p>';
         }
 
         function updateStats() {
@@ -489,25 +573,43 @@
 
         async function toggleGame() {
             const newStatus = !gameState.is_active;
-            const duration = parseInt(document.getElementById('timer-input').value) || 15;
+            const duration = parseInt(document.getElementById('timer-input').value) || 20;
+            const lockdown = parseInt(document.getElementById('lockdown-input').value) || 60;
             const startTime = newStatus ? new Date().toISOString() : gameState.start_time;
-            await _supabase.from('game_state').upsert({ id: 1, is_active: newStatus, start_time: startTime, duration_minutes: duration, announcement: gameState.announcement });
+            
+            const { error } = await _supabase.from('game_state').upsert({ 
+                id: 1, 
+                is_active: newStatus, 
+                start_time: startTime, 
+                duration_minutes: duration, 
+                lockdown_duration_seconds: lockdown, 
+                last_rescue_at: null 
+            });
+            
+            if (error) console.error(error);
             await fetchGameState();
         }
 
         function updateUIByGameState() {
             const btn = document.getElementById('game-toggle-btn');
             const timerEl = document.getElementById('timer');
+            const timerInput = document.getElementById('timer-input');
+            const lockdownInput = document.getElementById('lockdown-input');
+
             if (gameState && gameState.is_active) {
-                btn.innerText = "Stop Operation";
-                btn.className = "bg-red-600 hover:bg-red-500 px-8 py-3 rounded-xl font-black text-sm uppercase shadow-lg shadow-red-900/20 active:scale-95 transition-all";
+                btn.innerText = "Terminate Game";
+                btn.className = "w-full bg-red-600 hover:bg-red-500 py-4 rounded-xl font-black text-sm uppercase shadow-lg shadow-red-900/20 mb-2 transition-all active:scale-[0.98]";
                 timerEl.classList.add('text-red-500');
+                if (timerInput) timerInput.disabled = true;
+                if (lockdownInput) lockdownInput.disabled = true;
                 startTimer();
             } else {
-                btn.innerText = "Start Operation";
-                btn.className = "bg-yellow-600 hover:bg-yellow-500 px-8 py-3 rounded-xl font-black text-sm uppercase shadow-lg shadow-yellow-900/20 active:scale-95 transition-all";
+                btn.innerText = "Deploy Mission";
+                btn.className = "w-full bg-yellow-600 hover:bg-yellow-500 py-4 rounded-xl font-black text-sm uppercase shadow-lg shadow-yellow-900/20 mb-2 transition-all active:scale-[0.98]";
                 timerEl.classList.remove('text-red-500');
-                timerEl.innerText = String(gameState.duration_minutes || 15).padStart(2, '0') + ":00";
+                if (timerInput) timerInput.disabled = false;
+                if (lockdownInput) lockdownInput.disabled = false;
+                timerEl.innerText = String(gameState.duration_minutes || 20).padStart(2, '0') + ":00";
                 clearInterval(timerInterval);
             }
         }
@@ -515,7 +617,7 @@
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             if (!gameState || !gameState.start_time) return;
-            const durationMs = (gameState.duration_minutes || 15) * 60 * 1000;
+            const durationMs = (gameState.duration_minutes || 20) * 60 * 1000;
             const startTime = new Date(gameState.start_time).getTime();
             timerInterval = setInterval(() => {
                 const now = Date.now();
@@ -524,31 +626,24 @@
                 if (remaining <= 0) {
                     document.getElementById('timer').innerText = "00:00";
                     clearInterval(timerInterval);
-                    if (isAdmin && gameState.is_active) {
-                        alert("Time limit reached!");
-                        toggleGame();
-                    }
+                    if (isAdmin && gameState.is_active) { alert("게임 종료! 시간이 다 되었습니다."); toggleGame(); }
                     return;
                 }
                 const min = String(Math.floor(remaining / 60000)).padStart(2, '0');
                 const sec = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
                 document.getElementById('timer').innerText = `${min}:${sec}`;
-                if (remaining < 60000) document.getElementById('timer').classList.add('status-pulse');
+                if (remaining < 60000) document.getElementById('timer').classList.add('status-pulse'); 
                 else document.getElementById('timer').classList.remove('status-pulse');
             }, 1000);
         }
 
-        function logout() {
-            if(!confirm("로그아웃 하시겠습니까?")) return;
-            localStorage.clear();
-            location.reload();
-        }
+        function logout() { if(!confirm("로그아웃 하시겠습니까?")) return; localStorage.clear(); location.reload(); }
 
         async function resetGame() {
-            if(!confirm("정말로 모든 데이터를 초기화하시겠습니까?")) return;
+            if(!confirm("모든 데이터를 초기화하시겠습니까? 참여자 및 메시지가 모두 삭제됩니다.")) return;
             await _supabase.from('players').delete().neq('name', '_system_');
-            await _supabase.from('game_state').upsert({ id: 1, is_active: false, start_time: null, duration_minutes: 15, announcement: '' });
-            await _supabase.from('messages').delete().neq('player_name', '_system_'); // 채팅 내역도 초기화
+            await _supabase.from('game_state').upsert({ id: 1, is_active: false, start_time: null, duration_minutes: 20, announcement: '', lockdown_duration_seconds: 60, last_rescue_at: null });
+            await _supabase.from('messages').delete().neq('player_name', '_system_');
             location.reload();
         }
     </script>
